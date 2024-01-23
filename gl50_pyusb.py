@@ -2,6 +2,7 @@ import usb.core
 import usb.util
 from ctypes import *
 import sys
+import struct
 
 class command_block_wrapper(LittleEndianStructure):
     _pack_ = 1
@@ -82,7 +83,7 @@ buff = dev.read(epaddr_in, 13)
 #print('resultat Serial Number: ', buff)
 #print('conversion:', "-".join(hex(x) for x in buff))
 
-# Etape 3 Read (6). On demande les données
+# Etape 3 Read (6). On demande les données. Opcode: 08h
 iter=0
 exit_loop = False
 while True:
@@ -94,7 +95,8 @@ while True:
   cbw.bCWDFlags=0x80
   cbw.bCBWLun=0x00
   cbw.bCBWCBLength=0x10
-  cbw.CBWCB = 0x08, 0, iter, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  cbw.CBWCB = 0x08, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  cbw.CBWCB[2:4] = struct.pack('<H', iter)
   iter = iter + 1
   
   mycmd =  cbw.encode()
